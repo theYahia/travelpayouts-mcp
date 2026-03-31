@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "travelpayouts": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@theyahia/travelpayouts-mcp"
+      ],
+      "env": {
+        "TRAVELPAYOUTS_TOKEN": "YOUR_TOKEN"
+      }
+    }
+  }
+}
