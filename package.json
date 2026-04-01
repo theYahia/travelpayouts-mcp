@@ -1,7 +1,7 @@
 {
   "name": "@theyahia/travelpayouts-mcp",
-  "version": "2.0.0",
-  "description": "MCP server for Travelpayouts API — 11 tools: flight search, price calendar, cheapest month, popular directions, airline routes, special offers, hotel search, hotel prices, airport/airline/city lookup.",
+  "version": "2.0.1",
+  "description": "MCP server for Travelpayouts — flight search, hotel prices, travel deals (Russia)",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -48,7 +48,9 @@
     "travel",
     "hotels",
     "airlines",
-    "airports"
+    "airports",
+    "api",
+    "typescript"
   ],
   "license": "MIT",
   "repository": {
