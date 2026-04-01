@@ -13,7 +13,7 @@ import {
 import { searchHotelsSchema, handleSearchHotels, getHotelPricesSchema, handleGetHotelPrices } from "./tools/hotels.js";
 import { lookupAirportsSchema, handleLookupAirports, lookupAirlinesSchema, handleLookupAirlines, lookupCitiesSchema, handleLookupCities } from "./tools/lookup.js";
 
-const server = new McpServer({
+export const server = new McpServer({
   name: "travelpayouts-mcp",
   version: "2.0.0",
 });
