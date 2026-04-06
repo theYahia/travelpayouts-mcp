@@ -1,6 +1,6 @@
 # @theyahia/travelpayouts-mcp
 
-MCP server for the Travelpayouts (Aviasales) API. 11 tools for flight search, price calendars, hotel search, and airport/airline/city lookup.
+MCP server for the Travelpayouts (Aviasales) API. **13 tools** for flight search, price calendars, hotel search, airport/airline/city lookup, direct routes, and flexible date pricing.
 
 ## Install
 
@@ -36,9 +36,9 @@ npx @theyahia/travelpayouts-mcp
 }
 ```
 
-## Tools (11)
+## Tools (13)
 
-### Flights (6)
+### Flights (8)
 | Tool | Description |
 |------|-------------|
 | `search_flights_prices` | Search cheap flights by route, dates, and currency |
@@ -47,6 +47,8 @@ npx @theyahia/travelpayouts-mcp
 | `get_popular_directions` | Popular flight directions from a city with prices |
 | `get_airline_directions` | Routes served by a specific airline |
 | `get_special_offers` | Current special flight deals across all routes |
+| `get_direct_routes` | Search only non-stop flights between two cities |
+| `get_nearest_prices` | Prices for ±N days around a target date (flexible travel) |
 
 ### Hotels (2)
 | Tool | Description |
@@ -75,6 +77,12 @@ API token passed via `X-Access-Token` header or query parameter. Retries on 429 
 
 3. **"Search hotels in Sochi for July 10-17 for 2 adults, then find flights there from Moscow"**
    Uses `search_hotels` for accommodation options, then `search_flights_prices` for matching flight dates.
+
+4. **"I want to fly Moscow → Dubai around March 15, but ±3 days is fine if it's cheaper"**
+   Uses `get_nearest_prices` to compare prices across 7 dates centered on March 15.
+
+5. **"Find only direct flights from Moscow to Minsk"**
+   Uses `get_direct_routes` with direct=true filter.
 
 ## Development
 
