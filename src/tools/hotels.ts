@@ -2,43 +2,51 @@ import { z } from "zod";
 import { tpGet } from "../client.js";
 
 export const searchHotelsSchema = z.object({
-  location: z.string().describe("City name or IATA code for hotel search"),
-  check_in: z.string().describe("Check-in date YYYY-MM-DD"),
-  check_out: z.string().describe("Check-out date YYYY-MM-DD"),
-  adults: z.number().int().min(1).max(6).default(2).describe("Number of adults"),
-  currency: z.string().default("rub").describe("Currency code"),
-  limit: z.number().int().min(1).max(50).default(15).describe("Number of results"),
+  location: z.string().describe("Название города или курорта (напр. Moscow, Сочи)"),
+  check_in: z.string().describe("Дата заезда (YYYY-MM-DD)"),
+  check_out: z.string().describe("Дата выезда (YYYY-MM-DD)"),
+  adults: z.number().int().min(1).max(9).default(2).describe("Количество взрослых"),
+  children: z.number().int().min(0).max(4).default(0).describe("Количество детей"),
+  currency: z.string().default("rub").describe("Валюта цен"),
+  limit: z.number().int().min(1).max(50).default(10).describe("Количество результатов"),
 });
 
-export async function handleSearchHotels(params: z.infer<typeof searchHotelsSchema>): Promise<string> {
-  const q = new URLSearchParams();
-  q.set("location", params.location);
-  q.set("checkIn", params.check_in);
-  q.set("checkOut", params.check_out);
-  q.set("adults", String(params.adults));
-  q.set("currency", params.currency);
-  q.set("limit", String(params.limit));
+export const getHotelPricesSchema = z.object({
+  hotel_id: z.number().describe("ID отеля в Hotellook"),
+  check_in: z.string().describe("Дата заезда (YYYY-MM-DD)"),
+  check_out: z.string().describe("Дата выезда (YYYY-MM-DD)"),
+  adults: z.number().int().min(1).max(9).default(2).describe("Количество взрослых"),
+  currency: z.string().default("rub").describe("Валюта цен"),
+});
 
-  const result = await tpGet(`/hotellook/v2/cache.json?${q.toString()}`, true);
+export async function handleSearchHotels(
+  params: z.infer<typeof searchHotelsSchema>
+): Promise<string> {
+  const q = new URLSearchParams({
+    location: params.location,
+    checkIn: params.check_in,
+    checkOut: params.check_out,
+    adults: String(params.adults),
+    children: String(params.children),
+    currency: params.currency,
+    limit: String(params.limit),
+    language: "ru",
+  });
+  const result = await tpGet(`/cache.json?${q.toString()}`, true);
   return JSON.stringify(result, null, 2);
 }
 
-export const getHotelPricesSchema = z.object({
-  hotel_id: z.number().describe("Hotel ID from search results"),
-  check_in: z.string().describe("Check-in date YYYY-MM-DD"),
-  check_out: z.string().describe("Check-out date YYYY-MM-DD"),
-  adults: z.number().int().min(1).max(6).default(2).describe("Number of adults"),
-  currency: z.string().default("rub").describe("Currency code"),
-});
-
-export async function handleGetHotelPrices(params: z.infer<typeof getHotelPricesSchema>): Promise<string> {
-  const q = new URLSearchParams();
-  q.set("hotelId", String(params.hotel_id));
-  q.set("checkIn", params.check_in);
-  q.set("checkOut", params.check_out);
-  q.set("adults", String(params.adults));
-  q.set("currency", params.currency);
-
-  const result = await tpGet(`/hotellook/v2/cache.json?${q.toString()}`, true);
+export async function handleGetHotelPrices(
+  params: z.infer<typeof getHotelPricesSchema>
+): Promise<string> {
+  const q = new URLSearchParams({
+    id: String(params.hotel_id),
+    checkIn: params.check_in,
+    checkOut: params.check_out,
+    adults: String(params.adults),
+    currency: params.currency,
+    language: "ru",
+  });
+  const result = await tpGet(`/cache.json?${q.toString()}`, true);
   return JSON.stringify(result, null, 2);
 }

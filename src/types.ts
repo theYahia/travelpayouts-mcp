@@ -45,23 +45,3 @@ export interface TravelpayoutsError {
   error?: string;
   message?: string;
 }
-
-export interface TravelpayoutsHotelLocation {
-  id: number;
-  name: string;
-  type: string;
-  country_name?: string;
-  state?: string;
-}
-
-export interface TravelpayoutsHotelPrice {
-  hotel_id: number;
-  hotel_name?: string;
-  price_from: number;
-  price_avg?: number;
-  stars?: number;
-  location?: {
-    lat: number;
-    lon: number;
-  };
-}

@@ -2,53 +2,50 @@ import { z } from "zod";
 import { tpGet } from "../client.js";
 
 export const lookupAirportsSchema = z.object({
-  query: z.string().describe("Search query — airport or city name, IATA code"),
-  locale: z.string().default("ru").describe("Locale (ru, en)"),
+  query: z.string().describe("Название города, аэропорта или IATA-код (напр. Москва, SVO, Moscow)"),
+  lang: z.string().default("ru").describe("Язык результатов (ru, en)"),
+  limit: z.number().int().min(1).max(20).default(5).describe("Количество результатов"),
 });
 
-export async function handleLookupAirports(params: z.infer<typeof lookupAirportsSchema>): Promise<string> {
-  const result = await tpGet(`/aviasales/v3/autocomplete?term=${encodeURIComponent(params.query)}&locale=${params.locale}&types[]=airport&types[]=city`);
+export const lookupAirlinesSchema = z.object({
+  lang: z.string().default("ru").describe("Язык названий авиакомпаний (ru, en)"),
+});
+
+export const lookupCitiesSchema = z.object({
+  query: z.string().describe("Название города для поиска (напр. Москва, Moscow)"),
+  lang: z.string().default("ru").describe("Язык результатов (ru, en)"),
+  limit: z.number().int().min(1).max(20).default(5).describe("Количество результатов"),
+});
+
+export async function handleLookupAirports(
+  params: z.infer<typeof lookupAirportsSchema>
+): Promise<string> {
+  const q = new URLSearchParams({
+    term: params.query,
+    lang: params.lang,
+    limit: String(params.limit),
+    types: "airport",
+  });
+  const result = await tpGet(`/aviasales/v3/autocomplete?${q.toString()}`);
   return JSON.stringify(result, null, 2);
 }
 
-export const lookupAirlinesSchema = z.object({
-  query: z.string().describe("Search query — airline name or IATA code"),
-});
-
-export async function handleLookupAirlines(params: z.infer<typeof lookupAirlinesSchema>): Promise<string> {
-  // Use the data API for airlines
-  const result = await tpGet(`/data/ru/airlines.json`, true);
-  const airlines = result as Array<{ name: string; iata: string; icao?: string; is_lowcost?: boolean }>;
-
-  if (!Array.isArray(airlines)) {
-    return JSON.stringify(result, null, 2);
-  }
-
-  const q = params.query.toLowerCase();
-  const filtered = airlines.filter(a =>
-    a.name?.toLowerCase().includes(q) ||
-    a.iata?.toLowerCase() === q ||
-    a.icao?.toLowerCase() === q
-  ).slice(0, 20);
-
-  if (filtered.length === 0) {
-    return `No airlines found matching "${params.query}".`;
-  }
-
-  return JSON.stringify(filtered.map(a => ({
-    name: a.name,
-    iata: a.iata,
-    icao: a.icao,
-    is_lowcost: a.is_lowcost,
-  })), null, 2);
+export async function handleLookupAirlines(
+  params: z.infer<typeof lookupAirlinesSchema>
+): Promise<string> {
+  const result = await tpGet(`/data/${params.lang}/airlines.json`);
+  return JSON.stringify(result, null, 2);
 }
 
-export const lookupCitiesSchema = z.object({
-  query: z.string().describe("Search query — city name or IATA code"),
-  locale: z.string().default("ru").describe("Locale (ru, en)"),
-});
-
-export async function handleLookupCities(params: z.infer<typeof lookupCitiesSchema>): Promise<string> {
-  const result = await tpGet(`/aviasales/v3/autocomplete?term=${encodeURIComponent(params.query)}&locale=${params.locale}&types[]=city`);
+export async function handleLookupCities(
+  params: z.infer<typeof lookupCitiesSchema>
+): Promise<string> {
+  const q = new URLSearchParams({
+    term: params.query,
+    lang: params.lang,
+    limit: String(params.limit),
+    types: "city",
+  });
+  const result = await tpGet(`/aviasales/v3/autocomplete?${q.toString()}`);
   return JSON.stringify(result, null, 2);
 }

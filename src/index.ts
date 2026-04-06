@@ -1,7 +1,18 @@
 #!/usr/bin/env node
 
+/**
+ * @theyahia/travelpayouts-mcp — MCP server for Travelpayouts API
+ *
+ * 13 tools: search_flights_prices, get_cheapest_month, get_calendar_prices,
+ * get_popular_directions, get_airline_directions, get_special_offers,
+ * search_hotels, get_hotel_prices, lookup_airports, lookup_airlines, lookup_cities,
+ * get_direct_routes, get_nearest_prices.
+ *
+ * Transports: stdio (default), Streamable HTTP (--http or HTTP_PORT)
+ */
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { createLogger, runServer, withErrorHandling } from "@theyahia/mcp-core";
 import {
   searchFlightsPricesSchema, handleSearchFlightsPrices,
   getCheapestMonthSchema, handleGetCheapestMonth,
@@ -9,51 +20,155 @@ import {
   getPopularDirectionsSchema, handleGetPopularDirections,
   getAirlineDirectionsSchema, handleGetAirlineDirections,
   getSpecialOffersSchema, handleGetSpecialOffers,
+  getDirectRoutesSchema, handleGetDirectRoutes,
+  getNearestPricesSchema, handleGetNearestPrices,
 } from "./tools/flights.js";
-import { searchHotelsSchema, handleSearchHotels, getHotelPricesSchema, handleGetHotelPrices } from "./tools/hotels.js";
-import { lookupAirportsSchema, handleLookupAirports, lookupAirlinesSchema, handleLookupAirlines, lookupCitiesSchema, handleLookupCities } from "./tools/lookup.js";
+import {
+  searchHotelsSchema, handleSearchHotels,
+  getHotelPricesSchema, handleGetHotelPrices,
+} from "./tools/hotels.js";
+import {
+  lookupAirportsSchema, handleLookupAirports,
+  lookupAirlinesSchema, handleLookupAirlines,
+  lookupCitiesSchema, handleLookupCities,
+} from "./tools/lookup.js";
 
-export const server = new McpServer({
+const logger = createLogger("travelpayouts-mcp");
+
+function createServer(): McpServer {
+  const server = new McpServer({
+    name: "travelpayouts-mcp",
+    version: "2.1.0",
+  });
+
+  server.tool(
+    "search_flights_prices",
+    "Поиск дешёвых авиабилетов между двумя городами. IATA-коды городов (MOW, LED, IST). Поддерживает фильтрацию по дате и валюте. Возвращает цены, авиакомпании и детали рейсов.",
+    searchFlightsPricesSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleSearchFlightsPrices(params) }],
+    })),
+  );
+
+  server.tool(
+    "get_cheapest_month",
+    "Самые дешёвые авиабилеты на указанный месяц между двумя городами. Удобно для планирования — показывает минимальные цены за весь месяц.",
+    getCheapestMonthSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleGetCheapestMonth(params) }],
+    })),
+  );
+
+  server.tool(
+    "get_calendar_prices",
+    "Календарь цен на авиабилеты между двумя городами — минимальная цена на каждую дату. Используйте для выбора оптимальной даты перелёта.",
+    getCalendarPricesSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleGetCalendarPrices(params) }],
+    })),
+  );
+
+  server.tool(
+    "get_popular_directions",
+    "Популярные направления из города — самые дешёвые рейсы по специальным предложениям. Полезно для вдохновения и поиска travel deals.",
+    getPopularDirectionsSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleGetPopularDirections(params) }],
+    })),
+  );
+
+  server.tool(
+    "get_airline_directions",
+    "Направления конкретной авиакомпании с ценами. Используйте IATA-код авиакомпании (SU = Аэрофлот, S7 = S7, U6 = Уральские). Полезно при лояльности к конкретному перевозчику.",
+    getAirlineDirectionsSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleGetAirlineDirections(params) }],
+    })),
+  );
+
+  server.tool(
+    "get_special_offers",
+    "Специальные предложения и акционные цены на авиабилеты из города. Возвращает актуальные горящие предложения Travelpayouts.",
+    getSpecialOffersSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleGetSpecialOffers(params) }],
+    })),
+  );
+
+  server.tool(
+    "search_hotels",
+    "Поиск отелей в городе или курорте через Hotellook. Возвращает список с ценами, рейтингами и ссылками для бронирования.",
+    searchHotelsSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleSearchHotels(params) }],
+    })),
+  );
+
+  server.tool(
+    "get_hotel_prices",
+    "Цены на конкретный отель по hotel_id из Hotellook. Возвращает актуальные тарифы от разных OTA (Booking, Ostrovok и др.).",
+    getHotelPricesSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleGetHotelPrices(params) }],
+    })),
+  );
+
+  server.tool(
+    "lookup_airports",
+    "Поиск аэропортов по названию города или IATA-коду. Используйте для получения корректных IATA-кодов перед поиском авиабилетов.",
+    lookupAirportsSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleLookupAirports(params) }],
+    })),
+  );
+
+  server.tool(
+    "lookup_airlines",
+    "Справочник авиакомпаний с IATA-кодами. Используйте для получения кода авиакомпании перед вызовом get_airline_directions.",
+    lookupAirlinesSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleLookupAirlines(params) }],
+    })),
+  );
+
+  server.tool(
+    "lookup_cities",
+    "Поиск городов по названию с IATA-кодами. Используйте для получения корректных city-кодов перед поиском авиабилетов.",
+    lookupCitiesSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleLookupCities(params) }],
+    })),
+  );
+
+  server.tool(
+    "get_direct_routes",
+    "Только прямые рейсы без пересадок между двумя городами. Используйте когда клиент явно хочет лететь без пересадок.",
+    getDirectRoutesSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleGetDirectRoutes(params) }],
+    })),
+  );
+
+  server.tool(
+    "get_nearest_prices",
+    "Цены на авиабилеты в диапазоне ±N дней вокруг указанной даты. Помогает найти дешевле, если дата гибкая (напр. '15-го, но если 14-е дешевле — тоже смотрю').",
+    getNearestPricesSchema.shape,
+    withErrorHandling(async (params) => ({
+      content: [{ type: "text", text: await handleGetNearestPrices(params) }],
+    })),
+  );
+
+  return server;
+}
+
+runServer(createServer, {
   name: "travelpayouts-mcp",
-  version: "2.0.0",
-});
-
-function wrap(handler: (params: any) => Promise<string>) {
-  return async (params: any) => {
-    try {
-      const text = await handler(params);
-      return { content: [{ type: "text" as const, text }] };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return { content: [{ type: "text" as const, text: `Error: ${message}` }], isError: true };
-    }
-  };
-}
-
-// Flights (6)
-server.tool("search_flights_prices", "Search cheap flight tickets by route, dates, and currency. Returns prices, airlines, and durations.", searchFlightsPricesSchema.shape, wrap(handleSearchFlightsPrices));
-server.tool("get_cheapest_month", "Find the cheapest flights for an entire month on a route. Sorted by price.", getCheapestMonthSchema.shape, wrap(handleGetCheapestMonth));
-server.tool("get_calendar_prices", "Get a price calendar for flights on a route. Shows cheapest price per day.", getCalendarPricesSchema.shape, wrap(handleGetCalendarPrices));
-server.tool("get_popular_directions", "Get popular flight directions from a city with current prices and special offers.", getPopularDirectionsSchema.shape, wrap(handleGetPopularDirections));
-server.tool("get_airline_directions", "Get routes served by a specific airline with prices.", getAirlineDirectionsSchema.shape, wrap(handleGetAirlineDirections));
-server.tool("get_special_offers", "Get current special flight offers and deals across all routes.", getSpecialOffersSchema.shape, wrap(handleGetSpecialOffers));
-
-// Hotels (2)
-server.tool("search_hotels", "Search hotels by city with check-in/check-out dates. Returns prices and ratings.", searchHotelsSchema.shape, wrap(handleSearchHotels));
-server.tool("get_hotel_prices", "Get detailed prices for a specific hotel by ID and dates.", getHotelPricesSchema.shape, wrap(handleGetHotelPrices));
-
-// Lookup (3)
-server.tool("lookup_airports", "Search/autocomplete airports and cities by name or IATA code.", lookupAirportsSchema.shape, wrap(handleLookupAirports));
-server.tool("lookup_airlines", "Search airlines by name or IATA/ICAO code.", lookupAirlinesSchema.shape, wrap(handleLookupAirlines));
-server.tool("lookup_cities", "Search/autocomplete cities by name or IATA code.", lookupCitiesSchema.shape, wrap(handleLookupCities));
-
-async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("[travelpayouts-mcp] Server started. 11 tools. Requires TRAVELPAYOUTS_TOKEN.");
-}
-
-main().catch((error) => {
-  console.error("[travelpayouts-mcp] Error:", error);
+  version: "2.1.0",
+  toolCount: 13,
+  logger,
+}).catch((error) => {
+  logger.error("Fatal error", {
+    error: error instanceof Error ? error.message : String(error),
+  });
   process.exit(1);
 });
