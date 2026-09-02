@@ -1,6 +1,6 @@
-# @theyahia/travelpayouts-mcp
+# Travelpayouts MCP — flight and hotel search for AI assistants
 
-MCP server for the Travelpayouts (Aviasales) API. **13 tools** for flight search, price calendars, hotel search, airport/airline/city lookup, direct routes, and flexible date pricing.
+If you were looking for a way to have Claude or another AI assistant find the cheapest flight on a route, show a price calendar across flexible dates, resolve an airport or airline code or search hotels, this is it. **13 tools** sit on the Travelpayouts (Aviasales) API: flight search, price calendars, hotel search, airport/airline/city lookup, direct routes and flexible date pricing.
 
 ## Install
 
@@ -96,3 +96,4 @@ npm run build        # Compile TypeScript
 ## License
 
 MIT
+
