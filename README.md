@@ -18,7 +18,7 @@ npx @theyahia/travelpayouts-mcp
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `TRAVELPAYOUTS_TOKEN` | Yes | API token from [Travelpayouts](https://www.travelpayouts.com/developers/api) |
+| `TRAVELPAYOUTS_TOKEN` | Yes | API token from [Travelpayouts](https://support.travelpayouts.com/hc/en-us/articles/203956173-API) |
 
 ## Claude Desktop Config
 
