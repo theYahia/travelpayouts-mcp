@@ -97,3 +97,6 @@ npm run build        # Compile TypeScript
 
 MIT
 
+---
+
+Telegram: [@vhodvai](https://t.me/vhodvai)
