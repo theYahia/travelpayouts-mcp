@@ -1,17 +1,3 @@
-> ## 🗄 Репозиторий заархивирован
->
-> Разработка переехала в **[theYahia/WWmcp](https://github.com/theYahia/WWmcp)** — монорепозиторий MCP-серверов для незападных API: СНГ, MENA, Африка, LATAM, Юго-Восточная Азия. Общее ядро `@theyahia/mcp-core`, единый CI, единый релизный конвейер.
->
-> Актуальная версия того, что лежало здесь: [`servers/travelpayouts/`](https://github.com/theYahia/WWmcp/tree/main/servers/travelpayouts)
->
-> Пакет в npm прежний — [`@theyahia/travelpayouts-mcp`](https://www.npmjs.com/package/@theyahia/travelpayouts-mcp), ставится и работает как раньше.
-> Здесь больше ничего не обновляется. Задачи и pull request'ы — в WWmcp.
->
-> **Archived — development moved to [theYahia/WWmcp](https://github.com/theYahia/WWmcp),** a monorepo of MCP servers for non-Western APIs.
-> The current version of this package now lives at [`servers/travelpayouts/`](https://github.com/theYahia/WWmcp/tree/main/servers/travelpayouts).
-> The npm package [`@theyahia/travelpayouts-mcp`](https://www.npmjs.com/package/@theyahia/travelpayouts-mcp) is unchanged.
-> Please open issues and pull requests there.
-
 # Travelpayouts MCP — flight and hotel search for AI assistants
 
 If you were looking for a way to have Claude or another AI assistant find the cheapest flight on a route, show a price calendar across flexible dates, resolve an airport or airline code or search hotels, this is it. **13 tools** sit on the Travelpayouts (Aviasales) API: flight search, price calendars, hotel search, airport/airline/city lookup, direct routes and flexible date pricing.
